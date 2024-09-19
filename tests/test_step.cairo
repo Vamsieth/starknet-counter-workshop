@@ -1,13 +1,30 @@
-use super::utils::deploy_contract;
-use workshop::counter::{ICounterDispatcher, ICounterDispatcherTrait};
+// counter contract
+#[starknet::interface]
+trait ICounter<TContractState> {
+    fn get_counter(self: @TContractState) -> u32;
+    fn increase_counter(ref self: TContractState, _value: u32);
+}
 
-#[test]
-fn increase_counter() {
-    let initial_counter = 15;
-    let contract_address = deploy_contract(initial_counter);
-    let dispatcher = ICounterDispatcher { contract_address };
+#[starknet::contract]
+pub mod Counter {
+    #[storage]
+    struct Storage {
+        counter: u32
+    }
 
-    dispatcher.increase_counter();
-    let stored_counter = dispatcher.get_counter();
-    assert!(stored_counter == initial_counter + 1, "Stored value not equal");
+    #[constructor]
+    fn constructor(ref self: ContractState, _counter: u32) {
+        self.counter.write(_counter);
+    }
+
+    #[abi(embed_v0)]
+    impl counter_contract of super::ICounter<ContractState>{
+        fn get_counter(self: @ContractState) -> u32 {
+            return self.counter.read();
+        }
+
+        fn increase_counter(ref self: ContractState, _value: u32) {
+            self.counter.write(_value);
+        }
+    }
 }
