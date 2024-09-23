@@ -1,48 +1,52 @@
 // counter contract
 #[starknet::interface]
-trait ICounter<T> {
-    fn get_counter(self: @T) -> u32;
-    fn increase_counter(ref self: T);
+trait ICounter<TContractState> {
+    fn get_counter(self: @TContractState) -> u32;
+    fn increase_counter(ref self: TContractState, _value: u32);
 }
 
 #[starknet::contract]
 pub mod Counter {
-    
-    Use super::{ICounter, ICounterDispatcher,ICounterDispatcherTrait};
-    
+    use core::starknet::event::EventEmitter;
+    use starknet::{get_caller_address, ContractAddress};
+    use kill_switch::{IKillSwitchDispatcher, IKillSwitchDispatcherTrait};
+    use super::{ICounter, ICounterDispatcher, ICounterDispatcherTrait};
+
     #[storage]
     struct Storage {
-        counter: u32
+        counter: u32,
+        kill_switch: ContractAddress
     }
 
-    // this event will emit whenever the state variable counter increases
-    #[derive(Drop,starknet::Event)]
+    // This event will emit whenever the state variable counter increases
+    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     struct CounterIncreased {
        #[key]
-       value: u32
+       pub value: u32
     }
 
-    // event enum 
+    // Event enum 
     #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
+    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    pub enum Event {
         CounterIncreased: CounterIncreased
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, _counter: u32) {
+    fn constructor(ref self: ContractState, _counter: u32, _kill_switch: ContractAddress) {
         self.counter.write(_counter);
+        self.kill_switch.write(_kill_switch);
     }
 
     #[abi(embed_v0)]
-    impl ICounterImpl of ICounter<ContractState>{
+    impl counter_contract of super::ICounter<ContractState> {
         fn get_counter(self: @ContractState) -> u32 {
-            self.counter.read()
+            return self.counter.read();
         }
 
-        fn increase_counter(ref self: ContractState) {
-            Self.counter.write(self.counter.read()+1);
-            self.emit(CounterIncreased{value: self.counter.read()});
+        fn increase_counter(ref self: ContractState, _value: u32) {
+            self.counter.write(_value);
+            self.emit(Event::CounterIncreased(CounterIncreased { value: _value }));
         }
     }
 }
