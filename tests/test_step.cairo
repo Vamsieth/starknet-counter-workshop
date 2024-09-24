@@ -6,7 +6,7 @@ use snforge_std::{load, map_entry_address};
 
 #[test]
 fn test_kill_switch_contract_actived() {
-    let contract = declare("kill_switch").unwrap();
+    let contract = declare("KillSwitch").unwrap();
     let constructor_args = array![true.into()];
     let (contract_address, _) = contract.deploy(@constructor_args).unwrap();
 
@@ -17,7 +17,7 @@ fn test_kill_switch_contract_actived() {
 
 #[test]
 fn test_kill_switch_contract_deactivated() {
-    let contract = declare("kill_switch").unwrap();
+    let contract = declare("KillSwitch").unwrap();
     let constructor_args = array![false.into()];
     let (contract_address, _) = contract.deploy(@constructor_args).unwrap();
 
