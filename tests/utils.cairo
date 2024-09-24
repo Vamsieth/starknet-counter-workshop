@@ -8,7 +8,7 @@ pub fn deploy_contract(
     let constructor_args = array![kill_switch.into()];
     let (contract_address, _) = contract.deploy(@constructor_args).unwrap();
 
-    let contract = declare("counter_contract").unwrap();
+    let contract = declare("Counter").unwrap(); // Ensure the name matches the contract name
     let constructor_args = array![initial_value.into(), contract_address.into()];
     let (counter_address, _) = contract.deploy(@constructor_args).unwrap();
     return (counter_address, contract_address);

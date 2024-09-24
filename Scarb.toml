@@ -13,8 +13,7 @@ kill_switch = {git = "https://github.com/starknet-edu/kill-switch.git"}
 [[target.starknet-contract]]
 casm = true
 sierra = true
-build-external-contracts = ["kill_switch::KillSwitch","counter::Counter"]
-
+build-external-contracts = ["kill_switch::KillSwitch"]
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.27.0" }
 cairo_test = "2.8.0"
