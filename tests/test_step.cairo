@@ -9,19 +9,19 @@ fn test_counter_contract_with_kill_switch_deactivated() {
     let contract_address = deploy_contract(initial_counter, false);
     let dispatcher = ICounterDispatcher { contract_address };
 
-    dispatcher.increase_counter();
+    dispatcher.increase_counter(initial_counter + 1);
     let stored_counter = dispatcher.get_counter();
     assert!(stored_counter == initial_counter + 1, "Value not increased");
 }
 
 #[test]
-#[should_panic(expected: ("Kill Switch is active",))]
+#[should_panic(expected = "Kill Switch is active")]
 fn test_counter_contract_with_kill_switch_activated() {
     let initial_counter = 15;
     let contract_address = deploy_contract(initial_counter, true);
     let dispatcher = ICounterDispatcher { contract_address };
 
-    dispatcher.increase_counter();
+    dispatcher.increase_counter(initial_counter + 1);
     let stored_counter = dispatcher.get_counter();
     assert!(stored_counter == initial_counter + 1, "Value not increased");
 }
