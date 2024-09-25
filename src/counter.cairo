@@ -44,6 +44,8 @@ pub mod Counter {
         }
 
         fn increase_counter(ref self: ContractState, _value: u32) {
+            let status: bool = IKillSwitchDispatcher {contract_address: self.kill_switch.read()}.is_active();
+            assert!(status == true, "Kill Switch is active");
             self.counter.write(_value);
             self.emit(Event::CounterIncreased(CounterIncreased{value: _value}));
         }
