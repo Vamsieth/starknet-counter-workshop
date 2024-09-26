@@ -1,27 +1,16 @@
-use super::utils::{deploy_contract};
-use counter::counter::{ICounterDispatcher, ICounterDispatcherTrait};
-use snforge_std::{declare, cheatcodes::contract_class::ContractClassTrait};
-use kill_switch::{IKillSwitchDispatcher, IKillSwitchDispatcherTrait};
+use super::utils::{deploy_contract, Accounts};
+use openzeppelin::access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
+use snforge_std::{start_cheat_account_contract_address};
 
 #[test]
-fn test_counter_contract_with_kill_switch_deactivated() {
-    let initial_counter = 15;
-    let (counter_address, _) = deploy_contract(initial_counter, false);
-    let dispatcher = ICounterDispatcher { contract_address: counter_address };
+#[should_panic(expected: ('Caller is not the owner',))]
+fn check_renounce_ownership_as_bad_actor() {
+    let initial_counter = 0;
+    let contract_address = deploy_contract(initial_counter, true);
+    let dispatcher = IOwnableDispatcher { contract_address };
 
-    dispatcher.increase_counter();
-    let stored_counter = dispatcher.get_counter();
-    assert!(stored_counter == initial_counter + 1, "Value not increased");
-}
-
-#[test]
-#[should_panic(expected: "Kill Switch is active")]
-fn test_counter_contract_with_kill_switch_activated() {
-    let initial_counter = 15;
-    let (counter_address, _) = deploy_contract(initial_counter, true);
-    let dispatcher = ICounterDispatcher { contract_address: counter_address };
-
-    dispatcher.increase_counter();
-    let stored_counter = dispatcher.get_counter();
-    assert!(stored_counter == initial_counter + 1, "Value not increased");
+    start_cheat_account_contract_address(contract_address, Accounts::BAD_ACTOR());
+    dispatcher.renounce_ownership();
+    let current_owner = dispatcher.owner();
+    assert!(current_owner == Accounts::ZERO(), "Owner not renounced");
 }
