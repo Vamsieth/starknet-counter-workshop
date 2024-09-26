@@ -2,11 +2,11 @@
 #[starknet::interface]
 trait ICounter<TContractState> {
     fn get_counter(self: @TContractState) -> u32;
-    fn increase_counter(ref self: TContractState, _value: u32);
+    fn increase_counter(ref self: TContractState);
 }
 
 #[starknet::contract]
-pub mod Counter {
+pub mod counter_contract {
     use core::starknet::event::EventEmitter;
     use starknet::{get_caller_address, ContractAddress};
     use kill_switch::{IKillSwitchDispatcher, IKillSwitchDispatcherTrait};
@@ -43,11 +43,11 @@ pub mod Counter {
             return self.counter.read();
         }
 
-        fn increase_counter(ref self: ContractState, _value: u32) {
+        fn increase_counter(ref self: ContractState) {
             let status: bool = IKillSwitchDispatcher {contract_address: self.kill_switch.read()}.is_active();
             assert!(status == false, "Kill Switch is active");
-            self.counter.write(self.counter.read() + _value);
-            self.emit(Event::CounterIncreased(CounterIncreased{value: _value}));
+            self.counter.write(self.counter.read()+1);
+            self.emit(Event::CounterIncreased(CounterIncreased{value: self.counter.read()}));
         }
     }
 }
