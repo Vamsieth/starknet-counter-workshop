@@ -26,7 +26,7 @@ pub mod counter_contract {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage
     }
-    #[derive(Drop, PartialEq, starknet::Event)]
+    #[derive(Drop,PartialEq, starknet::Event)]
      struct CounterIncreased {
        #[key]
        pub value: u32
@@ -34,18 +34,19 @@ pub mod counter_contract {
 
     // event enum 
     #[event]
-    #[derive(Drop, PartialEq, starknet::Event)]
+    #[derive(Drop,PartialEq, starknet::Event)]
     pub enum Event {
         CounterIncreased: CounterIncreased,
         #[flat]
         OwnableEvent: OwnableComponent::Event
    }
 
-    #[constructor]
-    fn constructor(ref self: ContractState, init_value: u32,_kill_switch: ContractAddress) {
-        self.counter.write(init_value);
-        self.kill_switch.write(_kill_switch);
-    }
+   #[constructor]
+   fn constructor(ref self: ContractState, init_value: u32,_kill_switch: ContractAddress, _initial_owner: ContractAddress) {
+       self.ownable.initializer(_initial_owner);
+       self.counter.write(init_value);
+       self.kill_switch.write(_kill_switch);
+   }
 
     #[abi(embed_v0)]
     impl counter_contract of super::ICounter<ContractState> {
